@@ -295,21 +295,37 @@
     }
 
     async function upsert(table, data) {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal,resolution=merge-duplicates',
-          'on-conflict': 'user_id,match_id'
-        },
-        body: JSON.stringify(data)
-      });
-      if (res.ok) return true;
-      const err = await res.json();
-      console.error('Upsert error:', err);
-      return false;
+      const existing = userTips[data.match_id];
+
+      if (existing && existing.id) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${existing.id}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ home_tip: data.home_tip, away_tip: data.away_tip, updated_at: data.updated_at })
+        });
+        if (!res.ok) { const e = await res.json(); console.error('Update error:', e); return false; }
+        return true;
+      } else {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) { const e = await res.json(); console.error('Insert error:', e); return false; }
+        const created = await res.json();
+        if (created && created[0]) userTips[data.match_id] = { ...userTips[data.match_id], id: created[0].id };
+        return true;
+      }
     }
 
     function isDeadlinePassed(round) {
