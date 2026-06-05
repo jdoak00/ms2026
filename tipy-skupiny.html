@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MS 2026 – Tipy skupiny</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: #0F6E56;
+      color: #fff;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .topbar-title { font-size: 17px; font-weight: 700; }
+
+    .tab-bar {
+      background: #fff;
+      display: flex;
+      border-bottom: 2px solid #eee;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 13px 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      color: #0F6E56;
+      border-bottom-color: #0F6E56;
+    }
+
+    .deadline-info {
+      background: #fff3cd;
+      border-bottom: 2px solid #f0a500;
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 13px;
+      color: #533f03;
+    }
+
+    .deadline-info strong { font-weight: 800; }
+
+    .content {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .round-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 1rem 0 0.5rem 4px;
+    }
+
+    .match-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
+    .match-meta {
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .match-meta .group-tag {
+      background: #e1f5ee;
+      color: #0F6E56;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .match-teams {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .team-name {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .team-name.away { text-align: right; }
+
+    .vs {
+      font-size: 12px;
+      color: #bbb;
+      font-weight: 700;
+    }
+
+    .tip-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tip-label {
+      font-size: 12px;
+      color: #888;
+      flex: 1;
+    }
+
+    .tip-inputs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tip-input {
+      width: 48px;
+      height: 40px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      color: #1a1a1a;
+    }
+
+    .tip-input:focus {
+      border-color: #0F6E56;
+      box-shadow: 0 0 0 3px rgba(15,110,86,0.1);
+    }
+
+    .tip-input.filled {
+      border-color: #0F6E56;
+      background: #f0faf6;
+    }
+
+    .tip-separator {
+      font-size: 20px;
+      font-weight: 700;
+      color: #aaa;
+    }
+
+    .save-btn {
+      background: #0F6E56;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .save-btn:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    .save-btn.saved {
+      background: #27ae60;
+    }
+
+    .locked-badge {
+      font-size: 12px;
+      color: #e74c3c;
+      font-weight: 600;
+      background: #ffeaea;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    .result-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0F6E56;
+      background: #e1f5ee;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    .points-badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-left: 6px;
+    }
+
+    .pts-5 { background: #e1f5ee; color: #0a5240; }
+    .pts-3 { background: #e6f1fb; color: #185FA5; }
+    .pts-1 { background: #faeeda; color: #854F0B; }
+    .pts-0 { background: #f0f0f0; color: #888; }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #888;
+      font-size: 15px;
+    }
+
+    .empty-tab {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #aaa;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <button class="back-btn" onclick="window.location.href='menu.html'">‹</button>
+    <div class="topbar-title">⚽ Tipy – Základní skupina</div>
+  </div>
+
+  <div class="deadline-info" id="deadlineInfo">Načítám uzávěrku...</div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="showTab(1)">1. kolo</div>
+    <div class="tab" onclick="showTab(2)">2. kolo</div>
+    <div class="tab" onclick="showTab(3)">3. kolo</div>
+  </div>
+
+  <div class="content">
+    <div id="matchList" class="loading">Načítám zápasy...</div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://fizffhtzxjkeighdjhoi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpemZmaHR6eGprZWlnaGRqaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjU1MDYsImV4cCI6MjA5NjIwMTUwNn0.baa-qYiKNsPRgwyiDvmQ9hq8QNmCuHXebZ-tvldcVYs';
+
+    const user = JSON.parse(sessionStorage.getItem('ms2026_user'));
+    if (!user) window.location.href = 'index.html';
+
+    let currentTab = 1;
+    let allMatches = [];
+    let userTips = {};
+    let deadlines = {};
+
+    const ROUNDS = {
+      1: '1. kolo skupin',
+      2: '2. kolo skupin',
+      3: '3. kolo skupin'
+    };
+
+    async function get(table, params = '') {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      return res.json();
+    }
+
+    async function upsert(table, data) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify(data)
+      });
+      return res.ok;
+    }
+
+    function isDeadlinePassed(round) {
+      if (!deadlines[round]) return false;
+      return new Date() > new Date(deadlines[round]);
+    }
+
+    function formatDateTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString('cs-CZ', {
+        weekday: 'short', day: 'numeric', month: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function formatDeadline(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString('cs-CZ', {
+        day: 'numeric', month: 'numeric', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    async function loadData() {
+      const [matches, tips, dl] = await Promise.all([
+        get('matches', '?round=like.*kolo skupin*&order=match_time.asc&select=id,home_team,away_team,match_time,round,group_name,home_score,away_score,result_confirmed'),
+        get('tips', `?user_id=eq.${user.id}&select=id,match_id,home_tip,away_tip,points`),
+        get('deadlines', '?order=deadline_time.asc')
+      ]);
+
+      allMatches = matches;
+      userTips = {};
+      tips.forEach(t => userTips[t.match_id] = t);
+      deadlines = {};
+      dl.forEach(d => deadlines[d.round] = d.deadline_time);
+
+      updateDeadlineBanner();
+      renderTab(currentTab);
+    }
+
+    function updateDeadlineBanner() {
+      const round = ROUNDS[currentTab];
+      const el = document.getElementById('deadlineInfo');
+      if (deadlines[round]) {
+        const passed = isDeadlinePassed(round);
+        if (passed) {
+          el.style.background = '#ffeaea';
+          el.style.borderBottomColor = '#e74c3c';
+          el.innerHTML = `<strong>Uzávěrka ${round} již proběhla</strong> — tipy jsou uzamčeny`;
+        } else {
+          el.style.background = '#fff3cd';
+          el.style.borderBottomColor = '#f0a500';
+          el.innerHTML = `Uzávěrka tipů: <strong>${round}: ${formatDeadline(deadlines[round])}</strong>`;
+        }
+      } else {
+        el.textContent = '';
+      }
+    }
+
+    function renderTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', i + 1 === tab);
+      });
+      updateDeadlineBanner();
+
+      const round = ROUNDS[tab];
+      const matches = allMatches.filter(m => m.round === round);
+      const locked = isDeadlinePassed(round);
+      const list = document.getElementById('matchList');
+
+      if (matches.length === 0) {
+        list.innerHTML = '<div class="empty-tab">Žádné zápasy v tomto kole.</div>';
+        return;
+      }
+
+      const groups = {};
+      matches.forEach(m => {
+        if (!groups[m.group_name]) groups[m.group_name] = [];
+        groups[m.group_name].push(m);
+      });
+
+      let html = '';
+      Object.keys(groups).sort().forEach(group => {
+        html += `<div class="round-label">${group}</div>`;
+        groups[group].forEach(m => {
+          const tip = userTips[m.id];
+          const homeVal = tip ? tip.home_tip : '';
+          const awayVal = tip ? tip.away_tip : '';
+          const hasResult = m.result_confirmed && m.home_score !== null;
+
+          let tipSection = '';
+
+          if (hasResult && tip) {
+            const pts = tip.points;
+            const ptsCls = pts === 5 ? 'pts-5' : pts === 3 ? 'pts-3' : pts === 1 ? 'pts-1' : 'pts-0';
+            tipSection = `
+              <div class="tip-row">
+                <span class="tip-label">Tvůj tip: <strong>${tip.home_tip}:${tip.away_tip}</strong></span>
+                <span class="result-badge">${m.home_score}:${m.away_score}</span>
+                <span class="points-badge ${ptsCls}">${pts !== null ? pts + ' b' : '?'}</span>
+              </div>`;
+          } else if (hasResult && !tip) {
+            tipSection = `
+              <div class="tip-row">
+                <span class="tip-label" style="color:#e74c3c">Netipoval jsi</span>
+                <span class="result-badge">${m.home_score}:${m.away_score}</span>
+                <span class="points-badge pts-0">0 b</span>
+              </div>`;
+          } else if (locked) {
+            tipSection = `
+              <div class="tip-row">
+                ${tip ? `<span class="tip-label">Tvůj tip: <strong>${tip.home_tip}:${tip.away_tip}</strong></span>` : '<span class="tip-label" style="color:#e74c3c">Netipoval jsi</span>'}
+                <span class="locked-badge">🔒 Uzamčeno</span>
+              </div>`;
+          } else {
+            tipSection = `
+              <div class="tip-row">
+                <span class="tip-label">Tvůj tip:</span>
+                <div class="tip-inputs">
+                  <input class="tip-input ${homeVal !== '' ? 'filled' : ''}" type="number" min="0" max="99"
+                    id="h_${m.id}" value="${homeVal}" placeholder="–"
+                    oninput="this.classList.toggle('filled', this.value !== '')" />
+                  <span class="tip-separator">:</span>
+                  <input class="tip-input ${awayVal !== '' ? 'filled' : ''}" type="number" min="0" max="99"
+                    id="a_${m.id}" value="${awayVal}" placeholder="–"
+                    oninput="this.classList.toggle('filled', this.value !== '')" />
+                </div>
+                <button class="save-btn" id="btn_${m.id}" onclick="saveTip(${m.id})">Uložit</button>
+              </div>`;
+          }
+
+          html += `
+            <div class="match-card">
+              <div class="match-meta">
+                <span>${formatDateTime(m.match_time)}</span>
+                <span class="group-tag">${m.group_name}</span>
+              </div>
+              <div class="match-teams">
+                <span class="team-name">${m.home_team}</span>
+                <span class="vs">vs</span>
+                <span class="team-name away">${m.away_team}</span>
+              </div>
+              ${tipSection}
+            </div>`;
+        });
+      });
+
+      list.innerHTML = html;
+    }
+
+    async function saveTip(matchId) {
+      const hEl = document.getElementById(`h_${matchId}`);
+      const aEl = document.getElementById(`a_${matchId}`);
+      const btn = document.getElementById(`btn_${matchId}`);
+
+      const h = hEl.value.trim();
+      const a = aEl.value.trim();
+
+      if (h === '' || a === '') {
+        alert('Zadej obě čísla tipu.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Ukládám...';
+
+      const ok = await upsert('tips', {
+        user_id: user.id,
+        match_id: matchId,
+        home_tip: parseInt(h),
+        away_tip: parseInt(a),
+        updated_at: new Date().toISOString()
+      });
+
+      if (ok) {
+        btn.textContent = '✓ Uloženo';
+        btn.classList.add('saved');
+        userTips[matchId] = { home_tip: parseInt(h), away_tip: parseInt(a), points: null };
+        setTimeout(() => {
+          btn.textContent = 'Uložit';
+          btn.classList.remove('saved');
+          btn.disabled = false;
+        }, 2000);
+      } else {
+        btn.textContent = 'Chyba!';
+        btn.disabled = false;
+      }
+    }
+
+    function showTab(n) {
+      renderTab(n);
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
