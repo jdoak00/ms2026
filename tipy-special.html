@@ -78,7 +78,45 @@
       </div>
     </div>
     <div class="input-row">
-      <input class="tip-input-text" type="text" id="winnerInput" placeholder="např. Brazílie" maxlength="50" />
+      <select class="tip-input-text" id="winnerInput">
+        <option value="">-- Vyber tým --</option>
+        <optgroup label="Skupina A">
+          <option>Mexiko</option><option>Jihoafrická republika</option><option>Jižní Korea</option><option>Česko</option>
+        </optgroup>
+        <optgroup label="Skupina B">
+          <option>Kanada</option><option>Bosna a Hercegovina</option><option>Katar</option><option>Švýcarsko</option>
+        </optgroup>
+        <optgroup label="Skupina C">
+          <option>Francie</option><option>Nový Zéland</option><option>Ekvádor</option><option>Nigérie</option>
+        </optgroup>
+        <optgroup label="Skupina D">
+          <option>USA</option><option>Paraguay</option><option>Polsko</option><option>Japonsko</option>
+        </optgroup>
+        <optgroup label="Skupina E">
+          <option>Anglie</option><option>Pobřeží slonoviny</option><option>Peru</option><option>Írán</option>
+        </optgroup>
+        <optgroup label="Skupina F">
+          <option>Španělsko</option><option>Venezuela</option><option>Irák</option><option>Mali</option>
+        </optgroup>
+        <optgroup label="Skupina G">
+          <option>Argentina</option><option>Austrálie</option><option>Skotsko</option><option>Ghana</option>
+        </optgroup>
+        <optgroup label="Skupina H">
+          <option>Belgie</option><option>Saúdská Arábie</option><option>Chile</option><option>Jamajka</option>
+        </optgroup>
+        <optgroup label="Skupina I">
+          <option>Brazílie</option><option>Srbsko</option><option>Honduras</option><option>Alžírsko</option>
+        </optgroup>
+        <optgroup label="Skupina J">
+          <option>Portugalsko</option><option>Panama</option><option>Senegal</option><option>Uzbekistán</option>
+        </optgroup>
+        <optgroup label="Skupina K">
+          <option>Německo</option><option>Kostarika</option><option>Kamerun</option><option>SAE</option>
+        </optgroup>
+        <optgroup label="Skupina L">
+          <option>Itálie</option><option>Kolumbie</option><option>Maroko</option><option>Čína</option>
+        </optgroup>
+      </select>
       <button class="save-btn" id="winnerBtn" onclick="saveWinner()">Uložit</button>
     </div>
     <div id="winnerResult"></div>
@@ -152,13 +190,10 @@ async function loadData() {
 
 function renderExistingTips() {
   if (!existingTip) return;
-
-  const winnerInput = document.getElementById('winnerInput');
   const scorerInput = document.getElementById('scorerInput');
 
   if (existingTip.winner) {
-    winnerInput.value = existingTip.winner;
-    winnerInput.classList.add('filled');
+    setWinnerValue(existingTip.winner);
     if (existingTip.winner_points !== null) {
       const pts = existingTip.winner_points;
       document.getElementById('winnerResult').innerHTML =
@@ -186,6 +221,17 @@ function lockInputs() {
   document.getElementById('scorerBtn').disabled = true;
   document.getElementById('winnerBtn').textContent = 'Uzamčeno';
   document.getElementById('scorerBtn').textContent = 'Uzamčeno';
+}
+
+function setWinnerValue(val) {
+  const sel = document.getElementById('winnerInput');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === val || sel.options[i].text === val) {
+      sel.selectedIndex = i;
+      sel.classList.add('filled');
+      break;
+    }
+  }
 }
 
 async function saveWinner() {
