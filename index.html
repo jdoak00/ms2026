@@ -24,15 +24,18 @@
     }
 
     .logo-placeholder {
-      width: 80px;
-      height: 80px;
-      background: #0F6E56;
-      border-radius: 50%;
+      width: 130px;
+      height: 130px;
+      margin: 0 auto 0.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 36px;
-      margin: 0 auto 0.75rem;
+    }
+
+    .logo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .app-title {
@@ -152,7 +155,7 @@
 <body>
 
   <div class="logo-area">
-    <div class="logo-placeholder">⚽</div>
+    <div class="logo-placeholder"><img src="logo.png" alt="FIFA World Cup 2026" /></div>
     <div class="app-title">Tipovací soutěž</div>
     <div class="app-sub">Mistrovství světa ve fotbale 2026</div>
   </div>
@@ -235,7 +238,7 @@
           const user = data[0];
           sessionStorage.setItem('ms2026_user', JSON.stringify(user));
           if (user.is_admin) {
-            window.location.href = 'admin.html';
+            window.location.href = 'menu.html';
           } else {
             window.location.href = 'menu.html';
           }
