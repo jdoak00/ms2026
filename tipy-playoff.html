@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MS 2026 – Tipy Play-off</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    .topbar { background: #0F6E56; color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+    .back-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 20px; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
+    .topbar-title { font-size: 17px; font-weight: 700; }
+
+    .tab-bar { background: #fff; display: flex; border-bottom: 2px solid #eee; position: sticky; top: 0; z-index: 10; overflow-x: auto; }
+    .tab { flex: 1; min-width: 80px; padding: 13px 8px; text-align: center; font-size: 12px; font-weight: 600; color: #888; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+    .tab.active { color: #0F6E56; border-bottom-color: #0F6E56; }
+
+    .deadline-info { background: #fff3cd; border-bottom: 2px solid #f0a500; padding: 8px 16px; text-align: center; font-size: 13px; color: #533f03; }
+    .deadline-info strong { font-weight: 800; }
+
+    .content { max-width: 600px; margin: 0 auto; padding: 1rem; }
+    .round-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin: 1rem 0 0.5rem 4px; }
+
+    .match-card { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .match-meta { font-size: 11px; color: #aaa; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .round-tag { padding: 2px 8px; border-radius: 20px; font-weight: 600; font-size: 11px; }
+    .tag-16 { background: #e6f1fb; color: #185FA5; }
+    .tag-8 { background: #faeeda; color: #854F0B; }
+    .tag-4 { background: #fbeaf0; color: #993556; }
+    .tag-semi { background: #eeedfe; color: #534AB7; }
+    .tag-final { background: #e1f5ee; color: #0F6E56; }
+    .tag-3rd { background: #f1efe8; color: #5f5e5a; }
+
+    .match-teams { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .team-name { flex: 1; font-size: 15px; font-weight: 600; color: #1a1a1a; }
+    .team-name.away { text-align: right; }
+    .vs { font-size: 12px; color: #bbb; font-weight: 700; }
+
+    .tip-row { display: flex; align-items: center; gap: 8px; }
+    .tip-label { font-size: 12px; color: #888; flex: 1; }
+    .tip-inputs { display: flex; align-items: center; gap: 6px; }
+
+    .tip-input { width: 48px; height: 40px; text-align: center; font-size: 18px; font-weight: 700; border: 1.5px solid #ddd; border-radius: 8px; outline: none; color: #1a1a1a; background: #fff; }
+    .tip-input:focus { border-color: #0F6E56; box-shadow: 0 0 0 3px rgba(15,110,86,0.1); }
+    .tip-input.filled { border-color: #0F6E56; background: #f0faf6; }
+    .tip-separator { font-size: 20px; font-weight: 700; color: #aaa; }
+
+    .save-btn { background: #0F6E56; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .save-btn:disabled { background: #aaa; cursor: not-allowed; }
+    .save-btn.saved { background: #27ae60; }
+
+    .locked-badge { font-size: 12px; color: #e74c3c; font-weight: 600; background: #ffeaea; padding: 6px 12px; border-radius: 8px; }
+    .result-badge { font-size: 13px; font-weight: 700; color: #0F6E56; background: #e1f5ee; padding: 6px 12px; border-radius: 8px; }
+    .points-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-left: 6px; }
+    .pts-5 { background: #e1f5ee; color: #0a5240; }
+    .pts-3 { background: #e6f1fb; color: #185FA5; }
+    .pts-1 { background: #faeeda; color: #854F0B; }
+    .pts-0 { background: #f0f0f0; color: #888; }
+
+    .not-yet { text-align: center; padding: 2rem 1rem; color: #aaa; font-size: 14px; background: #fff; border-radius: 12px; margin-bottom: 10px; }
+    .loading { text-align: center; padding: 3rem; color: #888; font-size: 15px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='menu.html'">&#8249;</button>
+  <div class="topbar-title">&#127942; Tipy &ndash; Play-off</div>
+</div>
+
+<div class="deadline-info" id="deadlineInfo">Načítám uzávěrku...</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="showTab('Šestnáctifinále')">16-finále</div>
+  <div class="tab" onclick="showTab('Osmifinále')">Osmifinále</div>
+  <div class="tab" onclick="showTab('Čtvrtfinále')">Čtvrtfinále</div>
+  <div class="tab" onclick="showTab('Semifinále')">Semifinále</div>
+  <div class="tab" onclick="showTab('O 3. místo')">O 3. místo</div>
+  <div class="tab" onclick="showTab('Finále')">Finále</div>
+</div>
+
+<div class="content">
+  <div id="matchList" class="loading">Načítám zápasy...</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://fizffhtzxjkeighdjhoi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpemZmaHR6eGprZWlnaGRqaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjU1MDYsImV4cCI6MjA5NjIwMTUwNn0.baa-qYiKNsPRgwyiDvmQ9hq8QNmCuHXebZ-tvldcVYs';
+
+const user = JSON.parse(sessionStorage.getItem('ms2026_user'));
+if (!user) window.location.href = 'index.html';
+
+let currentRound = 'Šestnáctifinále';
+let allMatches = [];
+let userTips = {};
+let deadlines = {};
+
+const ROUND_DEADLINES = {
+  'Šestnáctifinále': 'Šestnáctifinále',
+  'Osmifinále': 'Čtvrtfinále',
+  'Čtvrtfinále': 'Čtvrtfinále',
+  'Semifinále': 'Semifinále',
+  'O 3. místo': 'O 3. místo a finále',
+  'Finále': 'O 3. místo a finále'
+};
+
+const TAG_CLASS = {
+  'Šestnáctifinále': 'tag-16',
+  'Osmifinále': 'tag-8',
+  'Čtvrtfinále': 'tag-4',
+  'Semifinále': 'tag-semi',
+  'Finále': 'tag-final',
+  'O 3. místo': 'tag-3rd'
+};
+
+async function apiFetch(path, method, body, extraHeaders) {
+  const headers = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
+  if (extraHeaders) Object.assign(headers, extraHeaders);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    method: method || 'GET', headers,
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (method === 'PATCH') return res.ok;
+  return await res.json();
+}
+
+async function loadData() {
+  const playoffRounds = ['Šestnáctifinále','Osmifinále','Čtvrtfinále','Semifinále','O 3. místo','Finále'];
+  const roundFilter = playoffRounds.map(r => 'round.eq.' + encodeURIComponent(r)).join(',');
+  const [matches, tips, dl] = await Promise.all([
+    apiFetch('matches?or=(' + roundFilter + ')&order=match_time.asc&select=id,home_team,away_team,match_time,round,home_score,away_score,result_confirmed'),
+    apiFetch('tips?user_id=eq.' + user.id + '&select=id,match_id,home_tip,away_tip,points'),
+    apiFetch('deadlines?order=deadline_time.asc')
+  ]);
+  allMatches = Array.isArray(matches) ? matches : [];
+  userTips = {};
+  if (Array.isArray(tips)) tips.forEach(t => { userTips[t.match_id] = { id: t.id, home_tip: t.home_tip, away_tip: t.away_tip, points: t.points }; });
+  deadlines = {};
+  if (Array.isArray(dl)) dl.forEach(d => { deadlines[d.round] = d.deadline_time; });
+  updateDeadlineBanner();
+  renderTab(currentRound);
+}
+
+function isLocked(round) {
+  const dlRound = ROUND_DEADLINES[round];
+  if (!dlRound || !deadlines[dlRound]) return false;
+  return new Date() > new Date(deadlines[dlRound]);
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleString('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function fmtDeadline(iso) {
+  return new Date(iso).toLocaleString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function updateDeadlineBanner() {
+  const dlRound = ROUND_DEADLINES[currentRound];
+  const el = document.getElementById('deadlineInfo');
+  if (!dlRound || !deadlines[dlRound]) { el.textContent = ''; return; }
+  if (isLocked(currentRound)) {
+    el.style.cssText = 'background:#ffeaea;border-bottom:2px solid #e74c3c;padding:8px 16px;text-align:center;font-size:13px;color:#c0392b';
+    el.innerHTML = '<strong>Uzávěrka již proběhla</strong> &mdash; tipy jsou uzamčeny';
+  } else {
+    el.style.cssText = 'background:#fff3cd;border-bottom:2px solid #f0a500;padding:8px 16px;text-align:center;font-size:13px;color:#533f03';
+    el.innerHTML = 'Uzávěrka tipů: <strong>' + fmtDeadline(deadlines[dlRound]) + '</strong>';
+  }
+}
+
+function renderTab(round) {
+  currentRound = round;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const tabs = ['Šestnáctifinále','Osmifinále','Čtvrtfinále','Semifinále','O 3. místo','Finále'];
+  const idx = tabs.indexOf(round);
+  if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
+  updateDeadlineBanner();
+
+  const matches = allMatches.filter(m => m.round === round);
+  const locked = isLocked(round);
+  const list = document.getElementById('matchList');
+
+  if (!matches.length) {
+    list.innerHTML = '<div class="not-yet">Zápasy tohoto kola budou doplněny po postupu týmů.</div>';
+    return;
+  }
+
+  const tagCls = TAG_CLASS[round] || 'tag-16';
+  let html = '';
+
+  matches.forEach(m => {
+    const tip = userTips[m.id];
+    const hasResult = m.result_confirmed && m.home_score !== null;
+    let tipSection = '';
+
+    if (hasResult) {
+      const pts = tip ? (tip.points !== null ? tip.points : 0) : 0;
+      const ptsCls = pts === 5 ? 'pts-5' : pts === 3 ? 'pts-3' : pts === 1 ? 'pts-1' : 'pts-0';
+      const tipStr = tip ? 'Tvůj tip: <strong>' + tip.home_tip + ':' + tip.away_tip + '</strong>' : 'Netipoval jsi';
+      tipSection = '<div class="tip-row"><span class="tip-label">' + tipStr + '</span><span class="result-badge">' + m.home_score + ':' + m.away_score + '</span><span class="points-badge ' + ptsCls + '">' + pts + ' b</span></div>';
+    } else if (locked) {
+      const tipStr = tip ? 'Tvůj tip: <strong>' + tip.home_tip + ':' + tip.away_tip + '</strong>' : '<span style="color:#e74c3c">Netipoval jsi</span>';
+      tipSection = '<div class="tip-row"><span class="tip-label">' + tipStr + '</span><span class="locked-badge">Uzamčeno</span></div>';
+    } else {
+      const hv = tip !== undefined ? tip.home_tip : '';
+      const av = tip !== undefined ? tip.away_tip : '';
+      tipSection = '<div class="tip-row"><span class="tip-label">Tvůj tip:</span><div class="tip-inputs">'
+        + '<input class="tip-input' + (hv !== '' ? ' filled' : '') + '" type="number" id="h_' + m.id + '" value="' + hv + '" placeholder="-" min="0" max="99">'
+        + '<span class="tip-separator">:</span>'
+        + '<input class="tip-input' + (av !== '' ? ' filled' : '') + '" type="number" id="a_' + m.id + '" value="' + av + '" placeholder="-" min="0" max="99">'
+        + '</div><button class="save-btn" id="btn_' + m.id + '" onclick="saveTip(' + m.id + ')">Uložit</button></div>';
+    }
+
+    html += '<div class="match-card">'
+      + '<div class="match-meta"><span>' + fmtDate(m.match_time) + '</span><span class="round-tag ' + tagCls + '">' + round + '</span></div>'
+      + '<div class="match-teams"><span class="team-name">' + m.home_team + '</span><span class="vs">vs</span><span class="team-name away">' + m.away_team + '</span></div>'
+      + tipSection + '</div>';
+  });
+
+  list.innerHTML = html;
+}
+
+async function saveTip(matchId) {
+  const hEl = document.getElementById('h_' + matchId);
+  const aEl = document.getElementById('a_' + matchId);
+  const btn = document.getElementById('btn_' + matchId);
+  const h = hEl.value.trim();
+  const a = aEl.value.trim();
+  if (h === '' || a === '') { alert('Zadej obě čísla tipu.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Ukládám...';
+
+  const existing = userTips[matchId];
+  let ok = false;
+
+  if (existing && existing.id) {
+    ok = await apiFetch('tips?id=eq.' + existing.id, 'PATCH', {
+      home_tip: parseInt(h), away_tip: parseInt(a), updated_at: new Date().toISOString()
+    });
+    if (ok) userTips[matchId] = { ...userTips[matchId], home_tip: parseInt(h), away_tip: parseInt(a) };
+  } else {
+    const result = await apiFetch('tips', 'POST', {
+      user_id: user.id, match_id: matchId, home_tip: parseInt(h), away_tip: parseInt(a)
+    }, { 'Prefer': 'return=representation' });
+    if (Array.isArray(result) && result[0]) {
+      userTips[matchId] = { id: result[0].id, home_tip: parseInt(h), away_tip: parseInt(a), points: null };
+      ok = true;
+    }
+  }
+
+  if (ok) {
+    btn.textContent = 'Uloženo';
+    btn.classList.add('saved');
+    hEl.classList.add('filled');
+    aEl.classList.add('filled');
+    setTimeout(() => { btn.textContent = 'Uložit'; btn.classList.remove('saved'); btn.disabled = false; }, 2000);
+  } else {
+    btn.textContent = 'Chyba!';
+    btn.disabled = false;
+  }
+}
+
+function showTab(round) { renderTab(round); }
+loadData();
+</script>
+</body>
+</html>
