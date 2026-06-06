@@ -10,7 +10,8 @@
 
     .topbar { background: #0F6E56; color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
     .back-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 20px; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
-    .topbar-title { font-size: 17px; font-weight: 700; }
+    .topbar-title { font-size: 17px; font-weight: 700; flex: 1; }
+    .logout-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
 
     .deadline-banner { background: #fff3cd; border-bottom: 2px solid #f0a500; padding: 10px 16px; text-align: center; font-size: 13px; color: #533f03; }
     .deadline-banner strong { font-weight: 900; font-size: 15px; display: block; margin-top: 2px; }
@@ -55,7 +56,8 @@
 
 <div class="topbar">
   <button class="back-btn" onclick="window.location.href='menu.html'">&#8249;</button>
-  <div class="topbar-title">&#11088; Speciál</div>
+  <div class="topbar-title">  <div class="topbar-title">&#11088; Speciál</div>#11088; Speciál</div>
+  <button class="logout-btn" onclick="logout()">Odhlásit</button>
 </div>
 
 <div class="deadline-banner" id="deadlineBanner">
@@ -279,6 +281,7 @@ async function saveSpecial(field, value, btnId, inputId) {
   }
 }
 
+function logout() { sessionStorage.removeItem("ms2026_user"); window.location.href = "index.html"; }
 loadData();
 </script>
 </body>
