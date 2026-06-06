@@ -9,57 +9,50 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
 
     .topbar { background: #0F6E56; color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
-    .back-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 20px; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
-    .topbar-title { font-size: 17px; font-weight: 700; }
+    .back-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 22px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
+    .topbar-title { font-size: 18px; font-weight: 700; }
 
-    .content { max-width: 600px; margin: 0 auto; padding: 1rem; }
+    .content { max-width: 640px; margin: 0 auto; padding: 1rem; }
+    .updated { text-align: center; font-size: 12px; color: #aaa; margin: 0.5rem 0 1rem; }
 
-    .updated { text-align: center; font-size: 12px; color: #aaa; margin: 0.75rem 0; }
+    .summary-card { background: #0F6E56; color: #fff; border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1.25rem; }
+    .summary-rank { font-size: 42px; font-weight: 900; line-height: 1; }
+    .summary-info { flex: 1; }
+    .summary-name { font-size: 16px; font-weight: 600; opacity: 0.9; margin-bottom: 4px; }
+    .summary-pts { font-size: 32px; font-weight: 900; }
+    .summary-pts span { font-size: 16px; font-weight: 400; opacity: 0.7; }
 
-    .table-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .table-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 5px rgba(0,0,0,0.08); }
 
-    .table-header { display: grid; grid-template-columns: 40px 1fr 60px; gap: 0; padding: 10px 16px; background: #f8f8f8; border-bottom: 1px solid #eee; }
-    .table-header span { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
-    .table-header .col-pts { text-align: right; }
+    .table-header { display: grid; grid-template-columns: 44px 1fr 56px 44px 44px 44px; gap: 0; padding: 10px 14px; background: #f8f8f8; border-bottom: 1px solid #eee; }
+    .table-header span { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
+    .table-header .col-name { text-align: left; }
 
-    .player-row { display: grid; grid-template-columns: 40px 1fr 60px; gap: 0; padding: 14px 16px; border-bottom: 1px solid #f5f5f5; align-items: center; transition: background 0.1s; }
+    .player-row { display: grid; grid-template-columns: 44px 1fr 56px 44px 44px 44px; gap: 0; padding: 14px 14px; border-bottom: 1px solid #f5f5f5; align-items: center; }
     .player-row:last-child { border-bottom: none; }
     .player-row.me { background: #f0faf6; }
     .player-row.top1 { background: #fffbea; }
 
-    .rank { font-size: 15px; font-weight: 700; color: #aaa; }
-    .rank.r1 { color: #f0a500; }
-    .rank.r2 { color: #888; }
-    .rank.r3 { color: #cd7f32; }
+    .col-rank { font-size: 17px; font-weight: 800; color: #bbb; text-align: center; }
+    .col-rank.r1 { color: #f0a500; }
+    .col-rank.r2 { color: #888; }
+    .col-rank.r3 { color: #cd7f32; }
 
-    .player-info { display: flex; flex-direction: column; gap: 2px; }
-    .player-name { font-size: 15px; font-weight: 600; color: #1a1a1a; }
-    .player-name.me-label::after { content: ' (já)'; font-size: 12px; color: #0F6E56; font-weight: 400; }
-    .player-detail { font-size: 11px; color: #aaa; }
+    .col-name { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+    .col-name.me-label::after { content: ' ★'; color: #0F6E56; }
 
-    .col-pts { text-align: right; }
-    .pts-value { font-size: 20px; font-weight: 800; color: #0F6E56; }
-    .pts-label { font-size: 10px; color: #aaa; }
+    .col-pts { font-size: 20px; font-weight: 900; color: #0F6E56; text-align: center; }
+    .col-5b, .col-3b, .col-1b { font-size: 15px; font-weight: 600; color: #555; text-align: center; }
 
-    .medal { font-size: 18px; margin-right: 4px; }
-
+    .loading { text-align: center; padding: 3rem; color: #888; }
     .empty { text-align: center; padding: 3rem; color: #aaa; font-size: 14px; }
-    .loading { text-align: center; padding: 3rem; color: #888; font-size: 15px; }
-
-    .summary-card { background: #0F6E56; color: #fff; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; }
-    .summary-rank { font-size: 36px; font-weight: 900; }
-    .summary-rank span { font-size: 16px; font-weight: 400; opacity: 0.7; }
-    .summary-info { flex: 1; }
-    .summary-name { font-size: 15px; font-weight: 600; opacity: 0.9; }
-    .summary-pts { font-size: 28px; font-weight: 900; }
-    .summary-pts span { font-size: 14px; font-weight: 400; opacity: 0.7; }
   </style>
 </head>
 <body>
 
 <div class="topbar">
   <button class="back-btn" onclick="window.location.href='menu.html'">&#8249;</button>
-  <div class="topbar-title">&#128202; Pořadí</div>
+  <div class="topbar-title">📊 Pořadí</div>
 </div>
 
 <div class="content">
@@ -68,8 +61,11 @@
   <div class="table-card">
     <div class="table-header">
       <span>#</span>
-      <span>Hráč</span>
-      <span class="col-pts">Body</span>
+      <span class="col-name">Hráč</span>
+      <span>Body</span>
+      <span>5b</span>
+      <span>3b</span>
+      <span>1b</span>
     </div>
     <div id="rankingList" class="loading">Načítám pořadí...</div>
   </div>
@@ -83,118 +79,76 @@ const user = JSON.parse(sessionStorage.getItem('ms2026_user'));
 if (!user) window.location.href = 'index.html';
 
 async function apiFetch(path) {
-  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-  });
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
   return await res.json();
 }
 
 async function loadRanking() {
   const [users, tips, specialTips] = await Promise.all([
-    apiFetch('users?select=id,full_name&is_admin=eq.false'),
+    apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc'),
     apiFetch('tips?select=user_id,points'),
     apiFetch('special_tips?select=user_id,winner_points,scorer_points')
   ]);
 
-  if (!Array.isArray(users)) {
-    document.getElementById('rankingList').innerHTML = '<div class="empty">Nepodařilo se načíst data.</div>';
-    return;
-  }
+  if (!Array.isArray(users)) { document.getElementById('rankingList').innerHTML = '<div class="empty">Nepodařilo se načíst data.</div>'; return; }
 
-  // Spočítej body pro každého hráče
-  const pointsMap = {};
-  const pts5map = {};
-  const pts3map = {};
-  const pts1map = {};
-
-  users.forEach(u => {
-    pointsMap[u.id] = 0;
-    pts5map[u.id] = 0;
-    pts3map[u.id] = 0;
-    pts1map[u.id] = 0;
-  });
+  const ptsMap = {}, pts5 = {}, pts3 = {}, pts1 = {};
+  users.forEach(u => { ptsMap[u.id] = 0; pts5[u.id] = 0; pts3[u.id] = 0; pts1[u.id] = 0; });
 
   if (Array.isArray(tips)) {
     tips.forEach(t => {
-      if (t.points === null || !pointsMap.hasOwnProperty(t.user_id)) return;
-      pointsMap[t.user_id] += t.points;
-      if (t.points === 5) pts5map[t.user_id]++;
-      else if (t.points === 3) pts3map[t.user_id]++;
-      else if (t.points === 1) pts1map[t.user_id]++;
+      if (t.points === null || !ptsMap.hasOwnProperty(t.user_id)) return;
+      ptsMap[t.user_id] += t.points;
+      if (t.points === 5) pts5[t.user_id]++;
+      else if (t.points === 3) pts3[t.user_id]++;
+      else if (t.points === 1) pts1[t.user_id]++;
     });
   }
 
   if (Array.isArray(specialTips)) {
     specialTips.forEach(s => {
-      if (!pointsMap.hasOwnProperty(s.user_id)) return;
-      if (s.winner_points) pointsMap[s.user_id] += s.winner_points;
-      if (s.scorer_points) pointsMap[s.user_id] += s.scorer_points;
+      if (!ptsMap.hasOwnProperty(s.user_id)) return;
+      if (s.winner_points) ptsMap[s.user_id] += s.winner_points;
+      if (s.scorer_points) ptsMap[s.user_id] += s.scorer_points;
     });
   }
 
-  // Seřaď podle pravidel: body → 5b tipy → 3b tipy → 1b tipy
-  const ranked = users.map(u => ({
-    id: u.id,
-    name: u.full_name,
-    pts: pointsMap[u.id] || 0,
-    pts5: pts5map[u.id] || 0,
-    pts3: pts3map[u.id] || 0,
-    pts1: pts1map[u.id] || 0
-  })).sort((a, b) => {
-    if (b.pts !== a.pts) return b.pts - a.pts;
-    if (b.pts5 !== a.pts5) return b.pts5 - a.pts5;
-    if (b.pts3 !== a.pts3) return b.pts3 - a.pts3;
-    return b.pts1 - a.pts1;
-  });
+  const ranked = users.map(u => ({ id: u.id, name: u.full_name, pts: ptsMap[u.id] || 0, p5: pts5[u.id] || 0, p3: pts3[u.id] || 0, p1: pts1[u.id] || 0 }))
+    .sort((a, b) => b.pts - a.pts || b.p5 - a.p5 || b.p3 - a.p3 || b.p1 - a.p1);
 
-  // Přiřaď pořadí (stejné body = stejné místo)
   let rank = 1;
   ranked.forEach((p, i) => {
-    if (i > 0) {
-      const prev = ranked[i - 1];
-      if (p.pts !== prev.pts || p.pts5 !== prev.pts5 || p.pts3 !== prev.pts3 || p.pts1 !== prev.pts1) {
-        rank = i + 1;
-      }
-    }
+    if (i > 0) { const prev = ranked[i-1]; if (p.pts !== prev.pts || p.p5 !== prev.p5 || p.p3 !== prev.p3 || p.p1 !== prev.p1) rank = i + 1; }
     p.rank = rank;
   });
 
-  // Moje pozice
   const me = ranked.find(p => p.id === user.id);
   if (me) {
-    const medal = me.rank === 1 ? '🥇' : me.rank === 2 ? '🥈' : me.rank === 3 ? '🥉' : '';
+    const medal = me.rank === 1 ? '🥇' : me.rank === 2 ? '🥈' : me.rank === 3 ? '🥉' : me.rank + '.';
     document.getElementById('mySummary').innerHTML =
-      '<div class="summary-card">'
-      + '<div class="summary-rank">' + medal + (medal ? '' : me.rank + '.') + '</div>'
-      + '<div class="summary-info">'
-      + '<div class="summary-name">' + me.name + '</div>'
-      + '<div class="summary-pts">' + me.pts + ' <span>bodů</span></div>'
-      + '</div></div>';
+      '<div class="summary-card"><div class="summary-rank">' + medal + '</div>'
+      + '<div class="summary-info"><div class="summary-name">' + me.name + '</div>'
+      + '<div class="summary-pts">' + me.pts + ' <span>bodů</span></div></div></div>';
   }
 
   document.getElementById('updatedAt').textContent = 'Aktualizováno: ' + new Date().toLocaleString('cs-CZ', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-  if (!ranked.length) {
-    document.getElementById('rankingList').innerHTML = '<div class="empty">Zatím žádní hráči.</div>';
-    return;
-  }
+  if (!ranked.length) { document.getElementById('rankingList').innerHTML = '<div class="empty">Zatím žádní hráči.</div>'; return; }
 
   const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
   let html = '';
   ranked.forEach(p => {
     const isMe = p.id === user.id;
     const rankCls = p.rank <= 3 ? ' r' + p.rank : '';
-    const detail = p.pts5 + '× přesný · ' + p.pts3 + '× výsledek · ' + p.pts1 + '× gól';
     html += '<div class="player-row' + (isMe ? ' me' : '') + (p.rank === 1 ? ' top1' : '') + '">'
-      + '<div class="rank' + rankCls + '">' + (medals[p.rank] || p.rank + '.') + '</div>'
-      + '<div class="player-info">'
-      + '<div class="player-name' + (isMe ? ' me-label' : '') + '">' + p.name + '</div>'
-      + '<div class="player-detail">' + detail + '</div>'
-      + '</div>'
-      + '<div class="col-pts"><div class="pts-value">' + p.pts + '</div><div class="pts-label">bodů</div></div>'
+      + '<div class="col-rank' + rankCls + '">' + (medals[p.rank] || p.rank + '.') + '</div>'
+      + '<div class="col-name' + (isMe ? ' me-label' : '') + '">' + p.name + '</div>'
+      + '<div class="col-pts">' + p.pts + '</div>'
+      + '<div class="col-5b">' + p.p5 + '</div>'
+      + '<div class="col-3b">' + p.p3 + '</div>'
+      + '<div class="col-1b">' + p.p1 + '</div>'
       + '</div>';
   });
-
   document.getElementById('rankingList').innerHTML = html;
 }
 
