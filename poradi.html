@@ -16,33 +16,33 @@
     .updated { text-align: center; font-size: 12px; color: #aaa; margin: 0.5rem 0 1rem; }
 
     .summary-card { background: #0F6E56; color: #fff; border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1.25rem; }
-    .summary-rank { font-size: 42px; font-weight: 900; line-height: 1; }
+    .summary-rank { font-size: 44px; font-weight: 900; line-height: 1; flex-shrink: 0; }
     .summary-info { flex: 1; }
     .summary-name { font-size: 16px; font-weight: 600; opacity: 0.9; margin-bottom: 4px; }
-    .summary-pts { font-size: 32px; font-weight: 900; }
+    .summary-pts { font-size: 34px; font-weight: 900; }
     .summary-pts span { font-size: 16px; font-weight: 400; opacity: 0.7; }
 
     .table-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 5px rgba(0,0,0,0.08); }
 
-    .table-header { display: grid; grid-template-columns: 44px 1fr 56px 44px 44px 44px; gap: 0; padding: 10px 14px; background: #f8f8f8; border-bottom: 1px solid #eee; }
-    .table-header span { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
-    .table-header .col-name { text-align: left; }
+    .table-header { display: grid; grid-template-columns: 40px 1fr 58px 38px 38px 38px; padding: 10px 14px; background: #f8f8f8; border-bottom: 1.5px solid #ebebeb; }
+    .table-header span { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
+    .table-header .h-name { text-align: left; }
 
-    .player-row { display: grid; grid-template-columns: 44px 1fr 56px 44px 44px 44px; gap: 0; padding: 14px 14px; border-bottom: 1px solid #f5f5f5; align-items: center; }
+    .player-row { display: grid; grid-template-columns: 40px 1fr 58px 38px 38px 38px; padding: 13px 14px; border-bottom: 1px solid #f2f2f2; align-items: center; }
     .player-row:last-child { border-bottom: none; }
     .player-row.me { background: #f0faf6; }
     .player-row.top1 { background: #fffbea; }
 
-    .col-rank { font-size: 17px; font-weight: 800; color: #bbb; text-align: center; }
+    .col-rank { font-size: 16px; font-weight: 800; color: #ccc; text-align: center; }
     .col-rank.r1 { color: #f0a500; }
-    .col-rank.r2 { color: #888; }
+    .col-rank.r2 { color: #999; }
     .col-rank.r3 { color: #cd7f32; }
 
-    .col-name { font-size: 15px; font-weight: 600; color: #1a1a1a; }
-    .col-name.me-label::after { content: ' ★'; color: #0F6E56; }
+    .col-name .firstname { font-size: 13px; font-weight: 400; color: #888; line-height: 1.2; }
+    .col-name .lastname { font-size: 15px; font-weight: 700; color: #1a1a1a; line-height: 1.2; }
 
-    .col-pts { font-size: 20px; font-weight: 900; color: #0F6E56; text-align: center; }
-    .col-5b, .col-3b, .col-1b { font-size: 15px; font-weight: 600; color: #555; text-align: center; }
+    .col-pts { font-size: 22px; font-weight: 900; color: #0F6E56; text-align: center; }
+    .col-sub { font-size: 13px; font-weight: 600; color: #aaa; text-align: center; }
 
     .loading { text-align: center; padding: 3rem; color: #888; }
     .empty { text-align: center; padding: 3rem; color: #aaa; font-size: 14px; }
@@ -61,7 +61,7 @@
   <div class="table-card">
     <div class="table-header">
       <span>#</span>
-      <span class="col-name">Hráč</span>
+      <span class="h-name">Hráč</span>
       <span>Body</span>
       <span>5b</span>
       <span>3b</span>
@@ -83,6 +83,14 @@ async function apiFetch(path) {
   return await res.json();
 }
 
+function splitName(full) {
+  const parts = full.trim().split(' ');
+  if (parts.length === 1) return { first: '', last: parts[0] };
+  const last = parts[parts.length - 1];
+  const first = parts.slice(0, parts.length - 1).join(' ');
+  return { first, last };
+}
+
 async function loadRanking() {
   const [users, tips, specialTips] = await Promise.all([
     apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc'),
@@ -95,58 +103,55 @@ async function loadRanking() {
   const ptsMap = {}, pts5 = {}, pts3 = {}, pts1 = {};
   users.forEach(u => { ptsMap[u.id] = 0; pts5[u.id] = 0; pts3[u.id] = 0; pts1[u.id] = 0; });
 
-  if (Array.isArray(tips)) {
-    tips.forEach(t => {
-      if (t.points === null || !ptsMap.hasOwnProperty(t.user_id)) return;
-      ptsMap[t.user_id] += t.points;
-      if (t.points === 5) pts5[t.user_id]++;
-      else if (t.points === 3) pts3[t.user_id]++;
-      else if (t.points === 1) pts1[t.user_id]++;
-    });
-  }
+  if (Array.isArray(tips)) tips.forEach(t => {
+    if (t.points === null || !ptsMap.hasOwnProperty(t.user_id)) return;
+    ptsMap[t.user_id] += t.points;
+    if (t.points === 5) pts5[t.user_id]++;
+    else if (t.points === 3) pts3[t.user_id]++;
+    else if (t.points === 1) pts1[t.user_id]++;
+  });
 
-  if (Array.isArray(specialTips)) {
-    specialTips.forEach(s => {
-      if (!ptsMap.hasOwnProperty(s.user_id)) return;
-      if (s.winner_points) ptsMap[s.user_id] += s.winner_points;
-      if (s.scorer_points) ptsMap[s.user_id] += s.scorer_points;
-    });
-  }
+  if (Array.isArray(specialTips)) specialTips.forEach(s => {
+    if (!ptsMap.hasOwnProperty(s.user_id)) return;
+    if (s.winner_points) ptsMap[s.user_id] += s.winner_points;
+    if (s.scorer_points) ptsMap[s.user_id] += s.scorer_points;
+  });
 
-  const ranked = users.map(u => ({ id: u.id, name: u.full_name, pts: ptsMap[u.id] || 0, p5: pts5[u.id] || 0, p3: pts3[u.id] || 0, p1: pts1[u.id] || 0 }))
-    .sort((a, b) => b.pts - a.pts || b.p5 - a.p5 || b.p3 - a.p3 || b.p1 - a.p1);
+  const ranked = users.map(u => ({ id: u.id, name: u.full_name, pts: ptsMap[u.id]||0, p5: pts5[u.id]||0, p3: pts3[u.id]||0, p1: pts1[u.id]||0 }))
+    .sort((a, b) => b.pts-a.pts || b.p5-a.p5 || b.p3-a.p3 || b.p1-a.p1);
 
   let rank = 1;
   ranked.forEach((p, i) => {
-    if (i > 0) { const prev = ranked[i-1]; if (p.pts !== prev.pts || p.p5 !== prev.p5 || p.p3 !== prev.p3 || p.p1 !== prev.p1) rank = i + 1; }
+    if (i > 0) { const prev = ranked[i-1]; if (p.pts!==prev.pts||p.p5!==prev.p5||p.p3!==prev.p3||p.p1!==prev.p1) rank=i+1; }
     p.rank = rank;
   });
 
   const me = ranked.find(p => p.id === user.id);
   if (me) {
-    const medal = me.rank === 1 ? '🥇' : me.rank === 2 ? '🥈' : me.rank === 3 ? '🥉' : me.rank + '.';
+    const medal = me.rank===1?'🥇':me.rank===2?'🥈':me.rank===3?'🥉':me.rank+'.';
     document.getElementById('mySummary').innerHTML =
       '<div class="summary-card"><div class="summary-rank">' + medal + '</div>'
       + '<div class="summary-info"><div class="summary-name">' + me.name + '</div>'
       + '<div class="summary-pts">' + me.pts + ' <span>bodů</span></div></div></div>';
   }
 
-  document.getElementById('updatedAt').textContent = 'Aktualizováno: ' + new Date().toLocaleString('cs-CZ', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+  document.getElementById('updatedAt').textContent = 'Aktualizováno: ' + new Date().toLocaleString('cs-CZ', { day:'numeric', month:'numeric', hour:'2-digit', minute:'2-digit' });
 
   if (!ranked.length) { document.getElementById('rankingList').innerHTML = '<div class="empty">Zatím žádní hráči.</div>'; return; }
 
-  const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const medals = { 1:'🥇', 2:'🥈', 3:'🥉' };
   let html = '';
   ranked.forEach(p => {
     const isMe = p.id === user.id;
-    const rankCls = p.rank <= 3 ? ' r' + p.rank : '';
-    html += '<div class="player-row' + (isMe ? ' me' : '') + (p.rank === 1 ? ' top1' : '') + '">'
-      + '<div class="col-rank' + rankCls + '">' + (medals[p.rank] || p.rank + '.') + '</div>'
-      + '<div class="col-name' + (isMe ? ' me-label' : '') + '">' + p.name + '</div>'
+    const rankCls = p.rank<=3?' r'+p.rank:'';
+    const n = splitName(p.name);
+    html += '<div class="player-row' + (isMe?' me':'') + (p.rank===1?' top1':'') + '">'
+      + '<div class="col-rank' + rankCls + '">' + (medals[p.rank]||p.rank+'.') + '</div>'
+      + '<div class="col-name"><div class="lastname">' + n.last + '</div>' + (n.first ? '<div class="firstname">' + n.first + '</div>' : '') + '</div>'
       + '<div class="col-pts">' + p.pts + '</div>'
-      + '<div class="col-5b">' + p.p5 + '</div>'
-      + '<div class="col-3b">' + p.p3 + '</div>'
-      + '<div class="col-1b">' + p.p1 + '</div>'
+      + '<div class="col-sub">' + p.p5 + '</div>'
+      + '<div class="col-sub">' + p.p3 + '</div>'
+      + '<div class="col-sub">' + p.p1 + '</div>'
       + '</div>';
   });
   document.getElementById('rankingList').innerHTML = html;
