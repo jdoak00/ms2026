@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MS 2026 – Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    .topbar { background: #1a1a2e; color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-title { font-size: 17px; font-weight: 700; }
+    .logout-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 12px; padding: 6px 14px; border-radius: 20px; cursor: pointer; }
+
+    .tab-bar { background: #fff; display: flex; border-bottom: 2px solid #eee; overflow-x: auto; }
+    .tab { flex: 1; min-width: 100px; padding: 13px 8px; text-align: center; font-size: 13px; font-weight: 600; color: #888; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+    .tab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
+
+    .content { max-width: 700px; margin: 0 auto; padding: 1.25rem 1rem; }
+
+    .section-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin: 1.25rem 0 0.5rem 4px; }
+    .section-label:first-child { margin-top: 0; }
+
+    .card { background: #fff; border-radius: 12px; padding: 1.25rem; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+
+    .field { margin-bottom: 0.75rem; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
+    .field input, .field select { width: 100%; padding: 10px 12px; font-size: 14px; border: 1.5px solid #ddd; border-radius: 8px; outline: none; background: #fff; }
+    .field input:focus, .field select:focus { border-color: #1a1a2e; }
+
+    .row { display: flex; gap: 10px; }
+    .row .field { flex: 1; }
+
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: #1a1a2e; color: #fff; }
+    .btn-primary:hover { background: #2d2d4e; }
+    .btn-success { background: #0F6E56; color: #fff; }
+    .btn-success:hover { background: #0a5240; }
+    .btn-danger { background: #e74c3c; color: #fff; font-size: 12px; padding: 6px 12px; }
+    .btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    .match-admin-card { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .match-admin-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .match-teams-txt { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+    .match-meta-txt { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .match-status { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+    .status-open { background: #e1f5ee; color: #0F6E56; }
+    .status-done { background: #e6f1fb; color: #185FA5; }
+
+    .result-form { display: flex; align-items: center; gap: 8px; }
+    .score-input { width: 52px; height: 38px; text-align: center; font-size: 17px; font-weight: 700; border: 1.5px solid #ddd; border-radius: 8px; outline: none; }
+    .score-input:focus { border-color: #0F6E56; }
+    .score-sep { font-size: 18px; font-weight: 700; color: #aaa; }
+    .confirm-btn { background: #0F6E56; color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .confirm-btn:disabled { background: #aaa; cursor: not-allowed; }
+    .confirmed-score { font-size: 18px; font-weight: 800; color: #0F6E56; }
+
+    .player-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+    .player-row:last-child { border-bottom: none; }
+    .player-name { flex: 1; font-size: 14px; font-weight: 600; }
+    .player-username { font-size: 12px; color: #888; }
+    .admin-badge { font-size: 11px; background: #1a1a2e; color: #fff; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+
+    .special-tip-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+    .special-tip-row:last-child { border-bottom: none; }
+    .special-name { font-size: 13px; font-weight: 600; flex: 1; }
+    .special-tip-val { font-size: 13px; color: #0F6E56; font-weight: 600; flex: 1; }
+    .pts-select { width: 80px; padding: 6px 8px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 13px; font-weight: 600; }
+    .save-pts-btn { background: #0F6E56; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+    .round-filter { margin-bottom: 1rem; }
+    .round-filter select { padding: 9px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; width: 100%; }
+
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 10px; }
+    .alert-success { background: #e1f5ee; color: #0a5240; }
+    .alert-error { background: #ffeaea; color: #c0392b; }
+
+    .loading { text-align: center; padding: 2rem; color: #888; }
+    .empty { text-align: center; padding: 2rem; color: #aaa; font-size: 14px; }
+
+    #tab-vysledky, #tab-hraci, #tab-special { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">⚙️ Admin panel – MS 2026</div>
+  <button class="logout-btn" onclick="logout()">Odhlásit</button>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="showTab('vysledky')">Výsledky</div>
+  <div class="tab" onclick="showTab('hraci')">Hráči</div>
+  <div class="tab" onclick="showTab('special')">Speciál</div>
+</div>
+
+<div class="content">
+
+  <!-- VÝSLEDKY -->
+  <div id="tab-vysledky">
+    <div class="round-filter">
+      <select id="roundSelect" onchange="loadMatches()">
+        <option value="1. kolo skupin">1. kolo skupin</option>
+        <option value="2. kolo skupin">2. kolo skupin</option>
+        <option value="3. kolo skupin">3. kolo skupin</option>
+        <option value="Šestnáctifinále">Šestnáctifinále</option>
+        <option value="Osmifinále">Osmifinále</option>
+        <option value="Čtvrtfinále">Čtvrtfinále</option>
+        <option value="Semifinále">Semifinále</option>
+        <option value="O 3. místo">O 3. místo</option>
+        <option value="Finále">Finále</option>
+      </select>
+    </div>
+    <div id="matchList" class="loading">Načítám zápasy...</div>
+  </div>
+
+  <!-- HRÁČI -->
+  <div id="tab-hraci">
+    <div class="section-label">Přidat hráče</div>
+    <div class="card">
+      <div class="row">
+        <div class="field">
+          <label>Celé jméno</label>
+          <input type="text" id="newFullName" placeholder="Jan Novák" />
+        </div>
+        <div class="field">
+          <label>Uživatelské jméno</label>
+          <input type="text" id="newUsername" placeholder="novakjan" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Heslo</label>
+        <input type="text" id="newPassword" placeholder="heslo123" />
+      </div>
+      <button class="btn btn-primary" onclick="addPlayer()">Přidat hráče</button>
+      <div id="playerAlert"></div>
+    </div>
+
+    <div class="section-label">Seznam hráčů</div>
+    <div class="card">
+      <div id="playerList" class="loading">Načítám hráče...</div>
+    </div>
+  </div>
+
+  <!-- SPECIÁL -->
+  <div id="tab-special">
+    <div class="section-label">Tipy na vítěze šampionátu</div>
+    <div class="card">
+      <div id="winnerTips" class="loading">Načítám...</div>
+    </div>
+    <div class="section-label">Tipy na nejlepšího střelce</div>
+    <div class="card">
+      <div id="scorerTips" class="loading">Načítám...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://fizffhtzxjkeighdjhoi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpemZmaHR6eGprZWlnaGRqaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjU1MDYsImV4cCI6MjA5NjIwMTUwNn0.baa-qYiKNsPRgwyiDvmQ9hq8QNmCuHXebZ-tvldcVYs';
+
+const user = JSON.parse(sessionStorage.getItem('ms2026_user'));
+if (!user || !user.is_admin) window.location.href = 'index.html';
+
+async function apiFetch(path, method, body, extraHeaders) {
+  const headers = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
+  if (extraHeaders) Object.assign(headers, extraHeaders);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    method: method || 'GET', headers,
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (method === 'PATCH' || method === 'DELETE') return res.ok;
+  return await res.json();
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const names = ['vysledky', 'hraci', 'special'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.getElementById('tab-vysledky').style.display = name === 'vysledky' ? 'block' : 'none';
+  document.getElementById('tab-hraci').style.display = name === 'hraci' ? 'block' : 'none';
+  document.getElementById('tab-special').style.display = name === 'special' ? 'block' : 'none';
+  if (name === 'hraci') loadPlayers();
+  if (name === 'special') loadSpecial();
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleString('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// ===== VÝSLEDKY =====
+async function loadMatches() {
+  const round = document.getElementById('roundSelect').value;
+  document.getElementById('matchList').innerHTML = '<div class="loading">Načítám...</div>';
+  const matches = await apiFetch('matches?round=eq.' + encodeURIComponent(round) + '&order=match_time.asc');
+  if (!Array.isArray(matches) || !matches.length) {
+    document.getElementById('matchList').innerHTML = '<div class="empty">Žádné zápasy v tomto kole.</div>';
+    return;
+  }
+  let html = '';
+  matches.forEach(m => {
+    const done = m.result_confirmed;
+    html += '<div class="match-admin-card">'
+      + '<div class="match-admin-top">'
+      + '<div><div class="match-teams-txt">' + m.home_team + ' vs ' + m.away_team + '</div>'
+      + '<div class="match-meta-txt">' + fmtDate(m.match_time) + (m.group_name ? ' · ' + m.group_name : '') + '</div></div>'
+      + '<span class="match-status ' + (done ? 'status-done' : 'status-open') + '">' + (done ? 'Hotovo' : 'Čeká') + '</span>'
+      + '</div>';
+    if (done) {
+      html += '<div style="display:flex;align-items:center;gap:12px">'
+        + '<span class="confirmed-score">' + m.home_score + ' : ' + m.away_score + '</span>'
+        + '<button class="btn btn-danger" onclick="resetResult(' + m.id + ')">Zrušit</button>'
+        + '</div>';
+    } else {
+      html += '<div class="result-form">'
+        + '<input class="score-input" type="number" id="hs_' + m.id + '" placeholder="0" min="0" max="99">'
+        + '<span class="score-sep">:</span>'
+        + '<input class="score-input" type="number" id="as_' + m.id + '" placeholder="0" min="0" max="99">'
+        + '<button class="confirm-btn" onclick="confirmResult(' + m.id + ')">Potvrdit a vypočítat body</button>'
+        + '</div>';
+    }
+    html += '</div>';
+  });
+  document.getElementById('matchList').innerHTML = html;
+}
+
+async function confirmResult(matchId) {
+  const hs = document.getElementById('hs_' + matchId).value.trim();
+  const as = document.getElementById('as_' + matchId).value.trim();
+  if (hs === '' || as === '') { alert('Zadej obě čísla výsledku.'); return; }
+  const homeScore = parseInt(hs);
+  const awayScore = parseInt(as);
+  if (!confirm('Potvrdit výsledek ' + homeScore + ':' + awayScore + '? Budou přepočítány body všem hráčům.')) return;
+
+  // Ulož výsledek
+  await apiFetch('matches?id=eq.' + matchId, 'PATCH', {
+    home_score: homeScore, away_score: awayScore, result_confirmed: true
+  });
+
+  // Načti všechny tipy pro tento zápas
+  const tips = await apiFetch('tips?match_id=eq.' + matchId + '&select=id,home_tip,away_tip');
+
+  // Vypočítej body pro každý tip
+  for (const tip of tips) {
+    const pts = calcPoints(tip.home_tip, tip.away_tip, homeScore, awayScore);
+    await apiFetch('tips?id=eq.' + tip.id, 'PATCH', { points: pts });
+  }
+
+  alert('Výsledek uložen a body vypočítány!');
+  loadMatches();
+}
+
+async function resetResult(matchId) {
+  if (!confirm('Zrušit výsledek? Body budou vynulovány.')) return;
+  await apiFetch('matches?id=eq.' + matchId, 'PATCH', { home_score: null, away_score: null, result_confirmed: false });
+  const tips = await apiFetch('tips?match_id=eq.' + matchId + '&select=id');
+  for (const tip of tips) { await apiFetch('tips?id=eq.' + tip.id, 'PATCH', { points: null }); }
+  loadMatches();
+}
+
+function calcPoints(ht, at, hs, as) {
+  // Přesný výsledek = 5b
+  if (ht === hs && at === as) return 5;
+  // Správný tip (1/0/2) = 3b
+  const tipSign = Math.sign(ht - at);
+  const resSign = Math.sign(hs - as);
+  if (tipSign === resSign) return 3;
+  // Aspoň počet gólů jednoho týmu = 1b
+  if (ht === hs || at === as) return 1;
+  return 0;
+}
+
+// ===== HRÁČI =====
+async function loadPlayers() {
+  const players = await apiFetch('users?order=full_name.asc&select=id,full_name,username,is_admin');
+  if (!Array.isArray(players)) { document.getElementById('playerList').innerHTML = '<div class="empty">Chyba načítání.</div>'; return; }
+  if (!players.length) { document.getElementById('playerList').innerHTML = '<div class="empty">Žádní hráči.</div>'; return; }
+  let html = '';
+  players.forEach(p => {
+    html += '<div class="player-row">'
+      + '<div><div class="player-name">' + p.full_name + (p.is_admin ? '<span class="admin-badge">admin</span>' : '') + '</div>'
+      + '<div class="player-username">@' + p.username + '</div></div>'
+      + (!p.is_admin ? '<button class="btn btn-danger" onclick="deletePlayer(\'' + p.id + '\', \'' + p.full_name + '\')">Smazat</button>' : '')
+      + '</div>';
+  });
+  document.getElementById('playerList').innerHTML = html;
+}
+
+async function addPlayer() {
+  const fullName = document.getElementById('newFullName').value.trim();
+  const username = document.getElementById('newUsername').value.trim();
+  const password = document.getElementById('newPassword').value.trim();
+  const alertEl = document.getElementById('playerAlert');
+
+  if (!fullName || !username || !password) {
+    alertEl.innerHTML = '<div class="alert alert-error" style="margin-top:10px">Vyplň všechna pole.</div>';
+    return;
+  }
+
+  const result = await apiFetch('users', 'POST', { full_name: fullName, username, password, is_admin: false }, { 'Prefer': 'return=representation' });
+  if (Array.isArray(result) && result[0]) {
+    alertEl.innerHTML = '<div class="alert alert-success" style="margin-top:10px">Hráč ' + fullName + ' přidán!</div>';
+    document.getElementById('newFullName').value = '';
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    loadPlayers();
+  } else {
+    alertEl.innerHTML = '<div class="alert alert-error" style="margin-top:10px">Chyba — uživatelské jméno již existuje?</div>';
+  }
+  setTimeout(() => { alertEl.innerHTML = ''; }, 3000);
+}
+
+async function deletePlayer(id, name) {
+  if (!confirm('Smazat hráče ' + name + '? Smažou se i všechny jeho tipy!')) return;
+  await apiFetch('tips?user_id=eq.' + id, 'DELETE', null);
+  await apiFetch('special_tips?user_id=eq.' + id, 'DELETE', null);
+  await apiFetch('users?id=eq.' + id, 'DELETE', null);
+  loadPlayers();
+}
+
+// ===== SPECIÁL =====
+async function loadSpecial() {
+  const [specials, users] = await Promise.all([
+    apiFetch('special_tips?select=id,user_id,winner,top_scorer,winner_points,scorer_points'),
+    apiFetch('users?select=id,full_name&is_admin=eq.false')
+  ]);
+  const userMap = {};
+  if (Array.isArray(users)) users.forEach(u => { userMap[u.id] = u.full_name; });
+
+  let winnerHtml = '';
+  let scorerHtml = '';
+
+  if (!Array.isArray(specials) || !specials.length) {
+    winnerHtml = '<div class="empty">Žádné tipy.</div>';
+    scorerHtml = '<div class="empty">Žádné tipy.</div>';
+  } else {
+    specials.forEach(s => {
+      const name = userMap[s.user_id] || s.user_id;
+      if (s.winner) {
+        winnerHtml += '<div class="special-tip-row">'
+          + '<span class="special-name">' + name + '</span>'
+          + '<span class="special-tip-val">' + s.winner + '</span>'
+          + '<select class="pts-select" id="wp_' + s.id + '">'
+          + '<option value="">–</option><option value="10" ' + (s.winner_points === 10 ? 'selected' : '') + '>10 b</option>'
+          + '<option value="0" ' + (s.winner_points === 0 ? 'selected' : '') + '>0 b</option>'
+          + '</select>'
+          + '<button class="save-pts-btn" onclick="saveWinnerPts(\'' + s.id + '\')">Uložit</button>'
+          + '</div>';
+      }
+      if (s.top_scorer) {
+        scorerHtml += '<div class="special-tip-row">'
+          + '<span class="special-name">' + name + '</span>'
+          + '<span class="special-tip-val">' + s.top_scorer + '</span>'
+          + '<select class="pts-select" id="sp_' + s.id + '">'
+          + '<option value="">–</option><option value="10" ' + (s.scorer_points === 10 ? 'selected' : '') + '>10 b</option>'
+          + '<option value="0" ' + (s.scorer_points === 0 ? 'selected' : '') + '>0 b</option>'
+          + '</select>'
+          + '<button class="save-pts-btn" onclick="saveScorerPts(\'' + s.id + '\')">Uložit</button>'
+          + '</div>';
+      }
+    });
+    if (!winnerHtml) winnerHtml = '<div class="empty">Zatím žádné tipy na vítěze.</div>';
+    if (!scorerHtml) scorerHtml = '<div class="empty">Zatím žádné tipy na střelce.</div>';
+  }
+
+  document.getElementById('winnerTips').innerHTML = winnerHtml;
+  document.getElementById('scorerTips').innerHTML = scorerHtml;
+}
+
+async function saveWinnerPts(id) {
+  const val = document.getElementById('wp_' + id).value;
+  if (val === '') { alert('Vyber body.'); return; }
+  await apiFetch('special_tips?id=eq.' + id, 'PATCH', { winner_points: parseInt(val) });
+  alert('Uloženo!');
+}
+
+async function saveScorerPts(id) {
+  const val = document.getElementById('sp_' + id).value;
+  if (val === '') { alert('Vyber body.'); return; }
+  await apiFetch('special_tips?id=eq.' + id, 'PATCH', { scorer_points: parseInt(val) });
+  alert('Uloženo!');
+}
+
+function logout() {
+  sessionStorage.removeItem('ms2026_user');
+  window.location.href = 'index.html';
+}
+
+// Init
+showTab('vysledky');
+loadMatches();
+</script>
+</body>
+</html>
