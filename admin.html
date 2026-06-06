@@ -59,10 +59,11 @@
     .confirm-btn:disabled { background: #aaa; cursor: not-allowed; }
     .confirmed-score { font-size: 18px; font-weight: 800; color: #0F6E56; }
 
-    .player-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+    .player-row { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-bottom: 1px solid #f5f5f5; }
     .player-row:last-child { border-bottom: none; }
-    .player-name { flex: 1; font-size: 14px; font-weight: 600; }
-    .player-username { font-size: 12px; color: #888; }
+    .player-name { flex: 1; font-size: 16px; font-weight: 700; }
+    .player-username { font-size: 13px; color: #888; margin-top: 2px; }
+    .player-password { font-size: 13px; color: #e74c3c; font-weight: 600; margin-top: 2px; }
     .admin-badge { font-size: 11px; background: #1a1a2e; color: #fff; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
 
     .special-tip-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
@@ -278,14 +279,16 @@ function calcPoints(ht, at, hs, as) {
 
 // ===== HRÁČI =====
 async function loadPlayers() {
-  const players = await apiFetch('users?order=full_name.asc&select=id,full_name,username,is_admin');
+  const players = await apiFetch('users?order=full_name.asc&select=id,full_name,username,password,is_admin');
   if (!Array.isArray(players)) { document.getElementById('playerList').innerHTML = '<div class="empty">Chyba načítání.</div>'; return; }
   if (!players.length) { document.getElementById('playerList').innerHTML = '<div class="empty">Žádní hráči.</div>'; return; }
   let html = '';
   players.forEach(p => {
     html += '<div class="player-row">'
       + '<div><div class="player-name">' + p.full_name + (p.is_admin ? '<span class="admin-badge">admin</span>' : '') + '</div>'
-      + '<div class="player-username">@' + p.username + '</div></div>'
+      + '<div class="player-username">Login: ' + p.username + '</div>'
+      + (!p.is_admin ? '<div class="player-password">Heslo: ' + p.password + '</div>' : '')
+      + '</div>'
       + (!p.is_admin ? '<button class="btn btn-danger" onclick="deletePlayer(\'' + p.id + '\', \'' + p.full_name + '\')">Smazat</button>' : '')
       + '</div>';
   });
