@@ -25,19 +25,17 @@
 
     .content { max-width: 640px; margin: 0 auto; padding: 1rem; }
 
-    .match-card { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 5px rgba(0,0,0,0.08); overflow: hidden; }
+    .match-card { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 5px rgba(0,0,0,0.08); }
 
     .match-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .match-date { font-size: 13px; color: #888; font-weight: 500; }
     .group-tag { background: #e1f5ee; color: #0F6E56; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; flex-shrink: 0; }
 
-    .match-main { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-    .teams-block { flex: 1; min-width: 0; }
-    .team-home { font-size: 15px; font-weight: 700; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .team-away { font-size: 15px; font-weight: 700; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .match-score-col { flex-shrink: 0; text-align: right; }
-    .match-score { font-size: 20px; font-weight: 900; color: #0F6E56; background: #e1f5ee; padding: 6px 12px; border-radius: 10px; white-space: nowrap; display: inline-block; }
-    .match-vs { font-size: 13px; color: #bbb; font-weight: 700; }
+    .match-main { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .team-home { font-size: 15px; font-weight: 700; color: #1a1a1a; flex: 1; min-width: 0; }
+    .team-away { font-size: 15px; font-weight: 700; color: #1a1a1a; flex: 1; min-width: 0; text-align: right; }
+    .match-score { font-size: 18px; font-weight: 900; color: #0F6E56; background: #e1f5ee; padding: 5px 11px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+    .match-vs { font-size: 13px; color: #ccc; font-weight: 700; flex-shrink: 0; }
 
     .tip-section { border-top: 1px solid #f0f0f0; padding-top: 11px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .tip-label { font-size: 14px; color: #888; white-space: nowrap; }
@@ -52,9 +50,9 @@
     .save-btn:disabled { background: #aaa; cursor: not-allowed; }
     .save-btn.saved { background: #27ae60; }
 
-    .locked-badge { font-size: 13px; color: #e74c3c; font-weight: 700; background: #ffeaea; padding: 7px 12px; border-radius: 10px; margin-left: auto; }
+    .locked-badge { font-size: 13px; color: #e74c3c; font-weight: 700; background: #ffeaea; padding: 7px 12px; border-radius: 10px; }
 
-    .tip-result-row { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; }
+    .tip-result-row { display: flex; align-items: center; gap: 10px; width: 100%; }
     .tip-shown { font-size: 16px; font-weight: 700; color: #1a1a1a; white-space: nowrap; }
 
     .points-badge { font-size: 14px; font-weight: 800; padding: 6px 14px; border-radius: 20px; white-space: nowrap; margin-left: auto; }
@@ -67,10 +65,10 @@
 
     .others-list { margin-top: 10px; border-top: 1px solid #f0f0f0; padding-top: 8px; display: none; }
     .others-list.open { display: block; }
-    .other-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f8f8f8; font-size: 14px; }
+    .other-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f8f8f8; font-size: 14px; }
     .other-row:last-child { border-bottom: none; }
     .other-name { color: #555; flex: 1; }
-    .other-tip { font-weight: 700; color: #1a1a1a; margin: 0 8px; }
+    .other-tip { font-weight: 700; color: #1a1a1a; }
 
     .loading { text-align: center; padding: 3rem; color: #888; font-size: 15px; }
   </style>
@@ -101,6 +99,8 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const user = JSON.parse(sessionStorage.getItem('ms2026_user'));
 if (!user) window.location.href = 'index.html';
 
+const isAdmin = user.is_admin === true;
+
 let currentTab = 1;
 let allMatches = [], userTips = {}, allTips = {}, allUsers = {}, deadlines = {};
 const ROUNDS = { 1: '1. kolo skupin', 2: '2. kolo skupin', 3: '3. kolo skupin' };
@@ -114,22 +114,31 @@ async function apiFetch(path, method, body, extraHeaders) {
 }
 
 async function loadData() {
-  const [matches, myTips, dl, allTipsData, users] = await Promise.all([
+  const promises = [
     apiFetch('matches?round=like.*kolo skupin*&order=match_time.asc&select=id,home_team,away_team,match_time,round,group_name,home_score,away_score,result_confirmed'),
     apiFetch('tips?user_id=eq.' + user.id + '&select=id,match_id,home_tip,away_tip,points'),
     apiFetch('deadlines?order=deadline_time.asc'),
-    apiFetch('tips?select=user_id,match_id,home_tip,away_tip,points'),
-    apiFetch('users?select=id,full_name&is_admin=eq.false')
-  ]);
+  ];
+  if (isAdmin) {
+    promises.push(apiFetch('tips?select=user_id,match_id,home_tip,away_tip,points'));
+    promises.push(apiFetch('users?select=id,full_name&is_admin=eq.false'));
+  }
+  const results = await Promise.all(promises);
+  const [matches, myTips, dl, allTipsData, users] = results;
+
   allMatches = Array.isArray(matches) ? matches : [];
   userTips = {};
   if (Array.isArray(myTips)) myTips.forEach(t => { userTips[t.match_id] = { id: t.id, home_tip: t.home_tip, away_tip: t.away_tip, points: t.points }; });
   deadlines = {};
   if (Array.isArray(dl)) dl.forEach(d => { deadlines[d.round] = d.deadline_time; });
-  allUsers = {};
-  if (Array.isArray(users)) users.forEach(u => { allUsers[u.id] = u.full_name; });
-  allTips = {};
-  if (Array.isArray(allTipsData)) allTipsData.forEach(t => { if (!allTips[t.match_id]) allTips[t.match_id] = []; allTips[t.match_id].push(t); });
+
+  if (isAdmin) {
+    allUsers = {};
+    if (Array.isArray(users)) users.forEach(u => { allUsers[u.id] = u.full_name; });
+    allTips = {};
+    if (Array.isArray(allTipsData)) allTipsData.forEach(t => { if (!allTips[t.match_id]) allTips[t.match_id] = []; allTips[t.match_id].push(t); });
+  }
+
   updateDeadlineBanner();
   renderTab(currentTab);
 }
@@ -173,30 +182,30 @@ function renderTab(tab) {
     const matchLocked = locked || hasResult;
 
     const scoreHtml = hasResult
-      ? '<div class="match-score-col"><span class="match-score">' + m.home_score + ' : ' + m.away_score + '</span></div>'
-      : '<div class="match-score-col"><span class="match-vs">vs</span></div>';
+      ? '<span class="match-score">' + m.home_score + ' : ' + m.away_score + '</span>'
+      : '<span class="match-vs">vs</span>';
 
     let tipHtml = '';
     if (hasResult && tip) {
       const pts = tip.points !== null ? tip.points : 0;
       const ptsCls = pts === 5 ? 'pts-5' : pts === 3 ? 'pts-3' : pts === 1 ? 'pts-1' : 'pts-0';
-      tipHtml = '<div class="tip-section"><div class="tip-result-row" style="width:100%">'
+      tipHtml = '<div class="tip-section"><div class="tip-result-row">'
         + '<span class="tip-label">Tvůj tip:</span>'
         + '<span class="tip-shown">' + tip.home_tip + ' : ' + tip.away_tip + '</span>'
         + '<span class="points-badge ' + ptsCls + '">' + pts + ' b</span>'
-        + '<button class="others-btn" onclick="toggleOthers(' + m.id + ')">Tipy ostatních</button>'
+        + (isAdmin ? '<button class="others-btn" onclick="toggleOthers(' + m.id + ')">Tipy hráčů</button>' : '')
         + '</div></div>';
     } else if (hasResult && !tip) {
-      tipHtml = '<div class="tip-section"><div class="tip-result-row" style="width:100%">'
+      tipHtml = '<div class="tip-section"><div class="tip-result-row">'
         + '<span class="tip-label" style="color:#e74c3c;font-weight:700">Netipoval jsi</span>'
         + '<span class="points-badge pts-0">0 b</span>'
-        + '<button class="others-btn" onclick="toggleOthers(' + m.id + ')">Tipy ostatních</button>'
+        + (isAdmin ? '<button class="others-btn" onclick="toggleOthers(' + m.id + ')">Tipy hráčů</button>' : '')
         + '</div></div>';
     } else if (matchLocked) {
-      tipHtml = '<div class="tip-section"><div class="tip-result-row" style="width:100%">'
+      tipHtml = '<div class="tip-section"><div class="tip-result-row">'
         + (tip ? '<span class="tip-label">Tvůj tip:</span><span class="tip-shown">' + tip.home_tip + ' : ' + tip.away_tip + '</span>' : '<span class="tip-label" style="color:#e74c3c;font-weight:700">Netipoval jsi</span>')
         + '<span class="locked-badge">🔒 Uzamčeno</span>'
-        + '<button class="others-btn" onclick="toggleOthers(' + m.id + ')">Tipy ostatních</button>'
+        + (isAdmin ? '<button class="others-btn" onclick="toggleOthers(' + m.id + ')">Tipy hráčů</button>' : '')
         + '</div></div>';
     } else {
       const hv = tip !== undefined ? tip.home_tip : '';
@@ -212,10 +221,10 @@ function renderTab(tab) {
         + '</div>';
     }
 
-    // Tipy ostatních
+    // Tipy ostatních — pouze pro admina
     let othersHtml = '';
-    if (matchLocked) {
-      const others = (allTips[m.id] || []).filter(t => t.user_id !== user.id);
+    if (isAdmin && matchLocked) {
+      const others = (allTips[m.id] || []);
       if (others.length) {
         othersHtml = '<div class="others-list" id="others_' + m.id + '">';
         others.forEach(t => {
@@ -234,7 +243,7 @@ function renderTab(tab) {
 
     html += '<div class="match-card">'
       + '<div class="match-top"><span class="match-date">' + fmtDate(m.match_time) + '</span><span class="group-tag">' + m.group_name + '</span></div>'
-      + '<div class="match-main"><div class="teams-block"><div class="team-home">' + m.home_team + '</div><div class="team-away">' + m.away_team + '</div></div>' + scoreHtml + '</div>'
+      + '<div class="match-main"><span class="team-home">' + m.home_team + '</span>' + scoreHtml + '<span class="team-away">' + m.away_team + '</span></div>'
       + tipHtml + othersHtml + '</div>';
   });
   list.innerHTML = html;
