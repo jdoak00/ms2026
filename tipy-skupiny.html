@@ -14,7 +14,8 @@
 
     .topbar { background: #0F6E56; color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
     .back-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 22px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
-    .topbar-title { font-size: 17px; font-weight: 700; }
+    .topbar-title { font-size: 17px; font-weight: 700; flex: 1; }
+    .logout-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
 
     .tab-bar { background: #fff; display: flex; border-bottom: 2px solid #eee; position: sticky; top: 0; z-index: 10; }
     .tab { flex: 1; padding: 13px 8px; text-align: center; font-size: 14px; font-weight: 600; color: #888; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
@@ -78,6 +79,7 @@
 <div class="topbar">
   <button class="back-btn" onclick="window.location.href='menu.html'">&#8249;</button>
   <div class="topbar-title">⚽ Tipy – Základní skupina</div>
+  <button class="logout-btn" onclick="logout()">Odhlásit</button>
 </div>
 
 <div class="deadline-info" id="deadlineInfo">Načítám uzávěrku...</div>
@@ -277,7 +279,7 @@ async function saveTip(matchId) {
   } else { btn.textContent = 'Chyba!'; btn.disabled = false; }
 }
 
-function showTab(n) { renderTab(n); }
+function logout() { sessionStorage.removeItem('ms2026_user'); window.location.href = 'index.html'; }
 loadData();
 </script>
 </body>
