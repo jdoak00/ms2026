@@ -279,6 +279,7 @@ async function saveTip(matchId) {
   } else { btn.textContent = 'Chyba!'; btn.disabled = false; }
 }
 
+function showTab(n) { renderTab(n); }
 function logout() { sessionStorage.removeItem('ms2026_user'); window.location.href = 'index.html'; }
 loadData();
 </script>
