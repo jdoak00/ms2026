@@ -97,6 +97,7 @@
   <div class="tab active" onclick="showTab('vysledky')">Výsledky</div>
   <div class="tab" onclick="showTab('hraci')">Hráči</div>
   <div class="tab" onclick="showTab('special')">Speciál</div>
+  <div class="tab" onclick="showTab('tipy')">Tipy hráčů</div>
 </div>
 
 <div class="content">
@@ -159,9 +160,25 @@
     </div>
   </div>
 
-</div>
+  <!-- TIPY HRÁČŮ -->
+  <div id="tab-tipy" style="display:none">
+    <div class="round-filter">
+      <select id="tipyRoundSelect" onchange="loadTipyHracu()">
+        <option value="1. kolo skupin">1. kolo skupin</option>
+        <option value="2. kolo skupin">2. kolo skupin</option>
+        <option value="3. kolo skupin">3. kolo skupin</option>
+        <option value="Šestnáctifinále">Šestnáctifinále</option>
+        <option value="Osmifinále">Osmifinále</option>
+        <option value="Čtvrtfinále">Čtvrtfinále</option>
+        <option value="Semifinále">Semifinále</option>
+        <option value="O 3. místo">O 3. místo</option>
+        <option value="Finále">Finále</option>
+      </select>
+    </div>
+    <div id="tipyHracuList" class="loading">Načítám...</div>
+  </div>
 
-<script>
+</div>
 const SUPABASE_URL = 'https://fizffhtzxjkeighdjhoi.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpemZmaHR6eGprZWlnaGRqaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjU1MDYsImV4cCI6MjA5NjIwMTUwNn0.baa-qYiKNsPRgwyiDvmQ9hq8QNmCuHXebZ-tvldcVYs';
 
@@ -181,14 +198,16 @@ async function apiFetch(path, method, body, extraHeaders) {
 
 function showTab(name) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const names = ['vysledky', 'hraci', 'special'];
+    const names = ['vysledky', 'hraci', 'special', 'tipy'];
     t.classList.toggle('active', names[i] === name);
   });
   document.getElementById('tab-vysledky').style.display = name === 'vysledky' ? 'block' : 'none';
   document.getElementById('tab-hraci').style.display = name === 'hraci' ? 'block' : 'none';
   document.getElementById('tab-special').style.display = name === 'special' ? 'block' : 'none';
+  document.getElementById('tab-tipy').style.display = name === 'tipy' ? 'block' : 'none';
   if (name === 'hraci') loadPlayers();
   if (name === 'special') loadSpecial();
+  if (name === 'tipy') loadTipyHracu();
 }
 
 function fmtDate(iso) {
@@ -388,6 +407,69 @@ async function saveScorerPts(id) {
   if (val === '') { alert('Vyber body.'); return; }
   await apiFetch('special_tips?id=eq.' + id, 'PATCH', { scorer_points: parseInt(val) });
   alert('Uloženo!');
+}
+
+// ===== TIPY HRÁČŮ =====
+async function loadTipyHracu() {
+  const round = document.getElementById('tipyRoundSelect').value;
+  document.getElementById('tipyHracuList').innerHTML = '<div class="loading">Načítám...</div>';
+
+  const [matches, allTips, users] = await Promise.all([
+    apiFetch('matches?round=eq.' + encodeURIComponent(round) + '&order=match_time.asc&select=id,home_team,away_team,home_score,away_score,result_confirmed'),
+    apiFetch('tips?select=user_id,match_id,home_tip,away_tip,points'),
+    apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc')
+  ]);
+
+  if (!Array.isArray(matches) || !matches.length) {
+    document.getElementById('tipyHracuList').innerHTML = '<div class="empty">Žádné zápasy v tomto kole.</div>';
+    return;
+  }
+
+  // Indexy
+  const tipMap = {};
+  allTips.forEach(t => {
+    if (!tipMap[t.match_id]) tipMap[t.match_id] = {};
+    tipMap[t.match_id][t.user_id] = t;
+  });
+
+  const ptsCls = p => p === 5 ? 'pts-5' : p === 3 ? 'pts-3' : p === 1 ? 'pts-1' : 'pts-0';
+
+  let html = '';
+  matches.forEach(m => {
+    const hasResult = m.result_confirmed && m.home_score !== null;
+    const resultStr = hasResult ? m.home_score + ':' + m.away_score : '–';
+    html += '<div class="match-admin-card">';
+    html += '<div class="match-admin-top"><div>'
+      + '<div class="match-teams-txt">' + m.home_team + ' vs ' + m.away_team + '</div>'
+      + '<div class="match-meta-txt">Výsledek: <strong>' + resultStr + '</strong></div>'
+      + '</div></div>';
+
+    // Tabulka tipů
+    html += '<table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:13px">';
+    html += '<thead><tr style="background:#f8f8f8;border-bottom:1px solid #eee">'
+      + '<th style="text-align:left;padding:6px 8px;font-weight:700;color:#888">Hráč</th>'
+      + '<th style="text-align:center;padding:6px 8px;font-weight:700;color:#888">Tip</th>'
+      + '<th style="text-align:center;padding:6px 8px;font-weight:700;color:#888">Body</th>'
+      + '</tr></thead><tbody>';
+
+    users.forEach(u => {
+      const tip = tipMap[m.id] && tipMap[m.id][u.id];
+      const tipStr = tip ? tip.home_tip + ':' + tip.away_tip : '<span style="color:#ccc">–</span>';
+      const pts = tip && tip.points !== null ? tip.points : null;
+      const ptsHtml = pts !== null
+        ? '<span style="background:' + (pts===5?'#1a7a4a':pts===3?'#a8e6c4':pts===1?'#faeeda':'#fde8e8') + ';color:' + (pts===5?'#fff':pts===3?'#0a5240':pts===1?'#854F0B':'#c0392b') + ';padding:2px 10px;border-radius:20px;font-weight:700">' + pts + ' b</span>'
+        : '<span style="color:#ccc">–</span>';
+      html += '<tr style="border-bottom:1px solid #f5f5f5">'
+        + '<td style="padding:7px 8px;font-weight:600">' + u.full_name + '</td>'
+        + '<td style="text-align:center;padding:7px 8px;font-weight:700">' + tipStr + '</td>'
+        + '<td style="text-align:center;padding:7px 8px">' + ptsHtml + '</td>'
+        + '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+  });
+
+  document.getElementById('tipyHracuList').innerHTML = html;
 }
 
 function logout() {
