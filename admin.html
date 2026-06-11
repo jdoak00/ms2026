@@ -415,16 +415,18 @@ async function loadTipyHracu() {
   const round = document.getElementById('tipyRoundSelect').value;
   document.getElementById('tipyHracuList').innerHTML = '<div class="loading">Načítám...</div>';
 
-  const [matches, allTips, users] = await Promise.all([
-    apiFetch('matches?round=eq.' + encodeURIComponent(round) + '&order=match_time.asc&select=id,home_team,away_team,home_score,away_score,result_confirmed'),
-    apiFetch('tips?select=user_id,match_id,home_tip,away_tip,points'),
-    apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc')
-  ]);
+  const matches = await apiFetch('matches?round=eq.' + encodeURIComponent(round) + '&order=match_time.asc&select=id,home_team,away_team,home_score,away_score,result_confirmed');
 
   if (!Array.isArray(matches) || !matches.length) {
     document.getElementById('tipyHracuList').innerHTML = '<div class="empty">Žádné zápasy v tomto kole.</div>';
     return;
   }
+
+  const matchIds = matches.map(m => m.id).join(',');
+  const [allTips, users] = await Promise.all([
+    apiFetch('tips?match_id=in.(' + matchIds + ')&select=user_id,match_id,home_tip,away_tip,points&limit=10000'),
+    apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc')
+  ]);
 
   // Indexy
   const tipMap = {};
