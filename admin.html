@@ -423,11 +423,16 @@ async function loadTipyHracu() {
     return;
   }
 
-  const matchIds = matches.map(m => m.id).join(',');
-  const [allTips, users] = await Promise.all([
-    apiFetch('tips?match_id=in.(' + matchIds + ')&select=user_id,match_id,home_tip,away_tip,points', 'GET', null, { 'Range': '0-9999', 'Range-Unit': 'items', 'Prefer': 'count=none' }),
-    apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc')
-  ]);
+  // Načti tipy po dávkách po 8 zápasů (8 × 84 hráčů = 672, pod limit 1000)
+  const batchSize = 8;
+  let allTipsArr = [];
+  for (let i = 0; i < matches.length; i += batchSize) {
+    const batchIds = matches.slice(i, i + batchSize).map(m => m.id).join(',');
+    const batch = await apiFetch('tips?match_id=in.(' + batchIds + ')&select=user_id,match_id,home_tip,away_tip,points');
+    if (Array.isArray(batch)) allTipsArr = allTipsArr.concat(batch);
+  }
+  const users = await apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc');
+  const allTips = allTipsArr;
 
   // Indexy
   const tipArray = Array.isArray(allTips) ? allTips : [];
