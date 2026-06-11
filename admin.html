@@ -429,8 +429,10 @@ async function loadTipyHracu() {
   ]);
 
   // Indexy
+  const tipArray = Array.isArray(allTips) ? allTips : [];
+  console.log('Načteno tipů:', tipArray.length, 'zápasů:', matches.length, 'hráčů:', users.length);
   const tipMap = {};
-  allTips.forEach(t => {
+  tipArray.forEach(t => {
     if (!tipMap[t.match_id]) tipMap[t.match_id] = {};
     tipMap[t.match_id][t.user_id] = t;
   });
@@ -486,4 +488,3 @@ loadMatches();
 </script>
 </body>
 </html>
-
