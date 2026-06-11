@@ -424,7 +424,7 @@ async function loadTipyHracu() {
 
   const matchIds = matches.map(m => m.id).join(',');
   const [allTips, users] = await Promise.all([
-    apiFetch('tips?match_id=in.(' + matchIds + ')&select=user_id,match_id,home_tip,away_tip,points&limit=10000'),
+    apiFetch('tips?match_id=in.(' + matchIds + ')&select=user_id,match_id,home_tip,away_tip,points', 'GET', null, { 'Range': '0-9999' }),
     apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc')
   ]);
 
