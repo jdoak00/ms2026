@@ -287,6 +287,7 @@ async function resetResult(matchId) {
 }
 
 function calcPoints(ht, at, hs, as) {
+  ht = parseInt(ht); at = parseInt(at); hs = parseInt(hs); as = parseInt(as);
   // Přesný výsledek = 5b
   if (ht === hs && at === as) return 5;
   // Správný tip (1/0/2) = 3b
