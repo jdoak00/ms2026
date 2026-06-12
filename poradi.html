@@ -102,11 +102,21 @@ function splitName(full) {
 }
 
 async function loadRanking() {
-  const [users, tips, specialTips] = await Promise.all([
+  const [users, specialTips, allMatches] = await Promise.all([
     apiFetch('users?select=id,full_name&is_admin=eq.false&order=full_name.asc'),
-    apiFetch('tips?select=user_id,points'),
-    apiFetch('special_tips?select=user_id,winner_points,scorer_points')
+    apiFetch('special_tips?select=user_id,winner_points,scorer_points'),
+    apiFetch('matches?select=id')
   ]);
+
+  // Načti tipy po dávkách kvůli limitu 1000 řádků
+  const matchIds = Array.isArray(allMatches) ? allMatches.map(m => m.id) : [];
+  const batchSize = 8;
+  let tips = [];
+  for (let i = 0; i < matchIds.length; i += batchSize) {
+    const batchIds = matchIds.slice(i, i + batchSize).join(',');
+    const batch = await apiFetch('tips?match_id=in.(' + batchIds + ')&select=user_id,points');
+    if (Array.isArray(batch)) tips = tips.concat(batch);
+  }
 
   if (!Array.isArray(users)) { document.getElementById('rankingList').innerHTML = '<div class="empty">Nepodařilo se načíst data.</div>'; return; }
 
